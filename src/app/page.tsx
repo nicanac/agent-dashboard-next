@@ -17,6 +17,8 @@ export default function DashboardPage() {
     activeSessions: 0
   })
 
+  const [currentModel, setCurrentModel] = useState<string>("Unknown")
+
   useEffect(() => {
     async function fetchStats() {
       // Pending Tasks
@@ -37,10 +39,12 @@ export default function DashboardPage() {
         .select('*', { count: 'exact', head: true })
 
       // Active Sessions
-      const { count: sessions } = await supabase
+      const { count: sessions, data: latestSession } = await supabase
         .from('sessions')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'exact' })
         .eq('status', 'active')
+        .order('started_at', { ascending: false })
+        .limit(1)
 
       setStats({
         pendingTasks: pending || 0,
@@ -48,6 +52,10 @@ export default function DashboardPage() {
         totalActivities: activities || 0,
         activeSessions: sessions || 0
       })
+      
+      if (latestSession && latestSession[0]) {
+        setCurrentModel(latestSession[0].model)
+      }
     }
 
     fetchStats()
@@ -140,7 +148,11 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-4">
+             <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                <span>Model:</span>
+                <span className="font-medium text-foreground">{currentModel}</span>
+             </div>
+            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                <div className="h-full bg-purple-500 rounded-full" style={{ width: '100%' }} />
             </div>
           </CardContent>

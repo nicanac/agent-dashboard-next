@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, Circle, Clock, Plus, Loader2 } from "lucide-react"
+import { CheckCircle2, Circle, Clock, Plus, Loader2, RefreshCw } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
 interface Task {
@@ -17,6 +17,7 @@ interface Task {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     fetchTasks()
@@ -39,6 +40,18 @@ export default function TasksPage() {
     }
   }
 
+  async function syncNotion() {
+    setSyncing(true)
+    try {
+      await fetch('/api/sync', { method: 'POST' })
+      await fetchTasks()
+    } catch (error) {
+      console.error('Sync failed', error)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -46,9 +59,15 @@ export default function TasksPage() {
           <h2 className="text-3xl font-bold tracking-tight">Task Queue</h2>
           <p className="text-muted-foreground">Manage your agent priorities and todo list.</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Task
-        </Button>
+        <div className="flex gap-2">
+           <Button variant="outline" onClick={syncNotion} disabled={syncing}>
+             <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+             {syncing ? 'Syncing...' : 'Sync Notion'}
+           </Button>
+           <Button>
+             <Plus className="mr-2 h-4 w-4" /> New Task
+           </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -58,7 +77,7 @@ export default function TasksPage() {
           </div>
         ) : tasks.length === 0 ? (
           <div className="text-center p-8 text-muted-foreground">
-            No tasks found. Create one to get started!
+            No tasks found. Sync with Notion to get started!
           </div>
         ) : (
           tasks.map((task) => (
