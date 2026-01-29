@@ -34,7 +34,7 @@
 - **Frontend:** Next.js 16 (App Router), Tailwind CSS v4, shadcn/ui.
 - **Backend:** Supabase (Database + Realtime Subscriptions).
 - **Deployment:** Vercel.
-- **Repo:** https://github.com/nicanac/agent-dashboard
+- **Repo:** https://github.com/nicanac/agent-dashboard-next
 
 ## 4. Database Schema (Supabase)
 - `tasks`: `id`, `title`, `priority`, `status`, `created_at`, `completed_at`, `notion_id`
